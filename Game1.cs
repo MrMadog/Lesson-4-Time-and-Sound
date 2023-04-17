@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -6,15 +7,22 @@ namespace Lesson_4___Time_and_Sound
 {
     public class Game1 : Game
     {
-        Texture2D bombTexture;
+        Texture2D bombTexture, explosionTexture;
 
-        Rectangle bombRect;
+        Vector2 explosionVector;
+        
+        Rectangle bombRect, explosionRect;
 
         SpriteFont timeFont;
 
         float seconds, startTime;
 
         MouseState mouseState;
+
+        SoundEffect explode;
+        SoundEffectInstance explodeInstance;
+
+        bool boom = false;
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -36,7 +44,8 @@ namespace Lesson_4___Time_and_Sound
 
 
             bombRect = new Rectangle(50, 50, 700, 400);
-
+            explosionRect = new Rectangle(50, 50, 700, 400);
+            explosionVector = new Vector2(1, 1);
 
             base.Initialize();
         }
@@ -50,6 +59,12 @@ namespace Lesson_4___Time_and_Sound
             bombTexture = Content.Load<Texture2D>("bomb");
 
             timeFont = Content.Load<SpriteFont>("time");
+
+            explode = Content.Load<SoundEffect>("explosion");
+
+            explosionTexture = Content.Load<Texture2D>("boom");
+
+            explodeInstance = explode.CreateInstance();
         }
 
         protected override void Update(GameTime gameTime)
@@ -65,6 +80,24 @@ namespace Lesson_4___Time_and_Sound
             if (mouseState.LeftButton == ButtonState.Pressed)
                 startTime = (float)gameTime.TotalGameTime.TotalSeconds;
 
+            if (seconds >= 15)
+            {
+                explodeInstance.Play();
+                startTime = (float)gameTime.TotalGameTime.TotalSeconds;
+                boom = true;
+
+            }
+
+            if (boom == true)
+            {
+                explosionRect.X -= (int)explosionVector.X;
+                explosionRect.Y -= (int)explosionVector.Y;
+                explosionRect.Width += 2;
+                explosionRect.Height += 2;
+                if (explodeInstance.State == SoundState.Stopped)
+                    System.Environment.Exit(0);
+            }
+
             base.Update(gameTime);
         }
 
@@ -75,7 +108,11 @@ namespace Lesson_4___Time_and_Sound
             // TODO: Add your drawing code here
             _spriteBatch.Begin();
             _spriteBatch.Draw(bombTexture, bombRect, Color.White);
-            _spriteBatch.DrawString(timeFont, (10-seconds).ToString("00.0"), new Vector2(270, 180), Color.Black);
+            _spriteBatch.DrawString(timeFont, (15-seconds).ToString("00.0"), new Vector2(270, 180), Color.Black);
+
+            if (boom == true)
+                _spriteBatch.Draw(explosionTexture, explosionRect, Color.White);
+
             _spriteBatch.End();
 
 
